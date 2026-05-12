@@ -13,7 +13,7 @@ A template for managing agent skills as a git repo, with bi-directional sync to 
 
 1. Click **Use this template** on GitHub (or fork it).
 2. Clone your new repo locally.
-3. Copy the workspace config: `cp config/workspaces.example.toml config/workspaces.toml` and edit it for your Databricks profile and target path.
+3. Copy the workspace config: `cp skills-sync.example.toml skills-sync.toml` and edit it for your Databricks profile and target path.
 4. Add skills under `skills/<skill-name>/`. The included `hello-world` is a worked example you can keep, rename, or delete.
 5. Sync: `python3 scripts/sync_skills.py plan --workspace <name>` then `apply`.
 
@@ -25,8 +25,7 @@ A template for managing agent skills as a git repo, with bi-directional sync to 
 ├── scripts/
 │   ├── README.md             # Sync tool usage, state model, recovery semantics
 │   └── sync_skills.py        # Push/pull skills to/from a Databricks workspace
-├── config/
-│   └── workspaces.example.toml   # Copy to workspaces.toml (gitignored)
+├── skills-sync.example.toml  # Copy to skills-sync.toml (gitignored)
 └── skills/
     └── <skill-name>/
         ├── SKILL.md          # Frontmatter + instructions
@@ -41,8 +40,8 @@ Reconciles each skill folder between this repo and a workspace, per skill, in ei
 
 ```bash
 # One-time setup
-cp config/workspaces.example.toml config/workspaces.toml
-# edit config/workspaces.toml
+cp skills-sync.example.toml skills-sync.toml
+# edit skills-sync.toml
 
 # Dry-run
 python3 scripts/sync_skills.py plan --workspace dev

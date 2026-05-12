@@ -7,5 +7,5 @@ __pycache__/
 # Local sync state — per-user, per-machine; never committed.
 .skills-sync-state.json
 
-# User-specific workspace targets (copy from workspaces.example.toml).
-config/workspaces.toml
+# User-specific workspace targets (copy from skills-sync.example.toml).
+skills-sync.toml

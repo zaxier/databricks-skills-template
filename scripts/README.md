@@ -9,11 +9,11 @@ Reconciles each skill folder between this repo and a workspace, per skill, in ei
 ### Setup (one-time)
 
 ```bash
-cp config/workspaces.example.toml config/workspaces.toml
-# edit config/workspaces.toml — add your profile + remote skills path
+cp skills-sync.example.toml skills-sync.toml
+# edit skills-sync.toml — add your profile + remote skills path
 ```
 
-`config/workspaces.toml` is gitignored. Each user keeps their own targets.
+`skills-sync.toml` is gitignored. Each user keeps their own targets.
 
 ### Daily use
 

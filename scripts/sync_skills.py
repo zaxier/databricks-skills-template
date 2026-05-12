@@ -37,7 +37,7 @@ from typing import Iterable
 REPO_ROOT = Path(__file__).resolve().parent.parent
 SKILLS_DIR = REPO_ROOT / "skills"
 STATE_FILE = REPO_ROOT / ".skills-sync-state.json"
-CONFIG_FILE = REPO_ROOT / "config" / "workspaces.toml"
+CONFIG_FILE = REPO_ROOT / "skills-sync.toml"
 
 IGNORE_NAMES = {".DS_Store", "__pycache__", ".pytest_cache"}
 
@@ -85,7 +85,7 @@ def load_workspace(name: str) -> WorkspaceTarget:
     if not CONFIG_FILE.exists():
         sys.exit(
             f"No config at {CONFIG_FILE.relative_to(REPO_ROOT)}. "
-            f"Copy config/workspaces.example.toml to config/workspaces.toml and edit it."
+            f"Copy skills-sync.example.toml to skills-sync.toml and edit it."
         )
     cfg = tomllib.loads(CONFIG_FILE.read_text("utf-8"))
     entry = cfg.get("workspaces", {}).get(name)
@@ -386,7 +386,7 @@ def apply_plan(
 def main() -> int:
     parser = argparse.ArgumentParser(description="Sync skills/ to/from a Databricks workspace.")
     parser.add_argument("command", choices=["plan", "apply"])
-    parser.add_argument("--workspace", "-w", required=True, help="Named target from config/workspaces.toml.")
+    parser.add_argument("--workspace", "-w", required=True, help="Named target from skills-sync.toml.")
     parser.add_argument("--stateless", action="store_true", help="Ignore .skills-sync-state.json entirely.")
     parser.add_argument(
         "--push-all", action="store_true", help="On apply, resolve every conflict by pushing."

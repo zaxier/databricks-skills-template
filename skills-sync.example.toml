@@ -1,5 +1,5 @@
-# Copy this file to config/workspaces.toml and edit for your setup.
-# config/workspaces.toml is gitignored — each user manages their own targets.
+# Copy this file to skills-sync.toml and edit for your setup.
+# skills-sync.toml is gitignored — each user manages their own targets.
 #
 # Each [workspaces.<name>] block defines a sync target.
 #   profile  — name from `databricks auth profiles`
