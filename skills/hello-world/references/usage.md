@@ -6,15 +6,15 @@ Extended notes for the `hello-world` skill.
 
 ```bash
 # Default greeting
-python3 hello.py
+python3 scripts/hello.py
 # → Hello, world!
 
 # Custom name
-python3 hello.py --name "Xavier"
+python3 scripts/hello.py --name "Xavier"
 # → Hello, Xavier!
 
 # Load template from the asset file
-python3 hello.py --from-asset --name "Xavier"
+python3 scripts/hello.py --from-asset --name "Xavier"
 # → G'day, Xavier!
 ```
 
@@ -25,8 +25,8 @@ A skill folder is self-contained:
 | Path | Purpose |
 | --- | --- |
 | `SKILL.md` | YAML frontmatter (`name`, `description`) + human/agent-readable instructions. The `description` is what the agent matches against when deciding whether to invoke the skill. |
-| `*.py` (or other code) | Executable logic the skill can shell out to. |
-| `reference/` | Longer-form docs the skill points the agent at when needed. Keep `SKILL.md` short; put depth here. |
+| `scripts/` | Executable logic the skill can shell out to (Python, shell, etc.). |
+| `references/` | Longer-form docs the skill points the agent at when needed. Keep `SKILL.md` short; put depth here. |
 | `assets/` | Static files (templates, sample data, images) the skill loads at runtime. |
 
 ## Writing the frontmatter

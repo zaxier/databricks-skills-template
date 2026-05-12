@@ -1,42 +1,50 @@
 # public-skills
 
-A collection of agent skills. Each skill lives in its own top-level folder and can be cloned into a local skills directory used by your AI coding agent.
+A collection of agent skills. The `skills/` directory mirrors the shape of the destination skills directory your AI agent loads from, so syncing is a one-step copy in either direction.
 
 ## Layout
 
 ```
 public-skills/
 ├── README.md
-└── <skill-name>/
-    ├── SKILL.md          # Frontmatter + instructions
-    ├── *.py              # Optional scripts
-    ├── reference/        # Reference docs the skill can pull in
-    └── assets/           # Static assets (templates, images, data)
+├── scripts/                  # (future) sync tooling — sync-to-claude, sync-to-databricks
+└── skills/
+    └── <skill-name>/
+        ├── SKILL.md          # Frontmatter + instructions
+        ├── scripts/          # Executable logic (Python, shell, ...)
+        ├── references/       # Longer-form docs the skill references
+        └── assets/           # Static files (templates, sample data, images)
 ```
 
-## Installing a skill
+## Syncing skills to a destination
 
-Skills are discovered from whatever directory your agent loads them from (commonly a user-level `~/.../skills/` or a project-level `.../skills/`). Drop a skill folder into that directory and the agent should pick it up.
+Because `skills/` mirrors the destination, syncing all skills is one command. The destination is whatever directory your agent reads skills from — for example a local Claude Code skills dir, or a `skills/` folder inside a Databricks workspace.
 
-Clone a single skill via sparse checkout:
+```bash
+# Sync everything (mirror — adds/updates; --delete also removes stale skills)
+rsync -av --delete public-skills/skills/ <dest>/skills/
+
+# Sync a single skill
+rsync -av public-skills/skills/hello-world/ <dest>/skills/hello-world/
+```
+
+For a Databricks workspace, replace `rsync` with `databricks workspace import-dir` (or the equivalent CLI/API call) against `/Workspace/.../skills/`.
+
+## Pulling a single skill via sparse checkout
+
+When you don't want to clone the whole repo:
 
 ```bash
 git clone --depth 1 --filter=blob:none --sparse \
   https://github.com/zaxier/public-skills.git /tmp/public-skills
-cd /tmp/public-skills && git sparse-checkout set hello-world
-cp -r hello-world <your-skills-dir>/
-```
-
-Or clone the whole repo and symlink the skills you want:
-
-```bash
-git clone https://github.com/zaxier/public-skills.git ~/code/public-skills
-ln -s ~/code/public-skills/hello-world <your-skills-dir>/hello-world
+cd /tmp/public-skills
+git sparse-checkout set skills/hello-world
+cp -r skills/hello-world <dest>/skills/
 ```
 
 ## Adding a new skill
 
-1. Create a new folder at the repo root: `mkdir my-skill`
+1. Create a new folder under `skills/`: `mkdir -p skills/my-skill/{scripts,references,assets}`
 2. Add a `SKILL.md` with YAML frontmatter (`name`, `description`)
-3. Add any scripts, `reference/`, or `assets/` the skill needs
+3. Add any scripts, references, or assets the skill needs
 4. Open a PR

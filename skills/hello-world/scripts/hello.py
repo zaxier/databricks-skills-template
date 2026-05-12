@@ -18,7 +18,8 @@ def main() -> int:
     args = parser.parse_args()
 
     if args.from_asset:
-        asset = Path(__file__).parent / "assets" / "greeting.txt"
+        skill_root = Path(__file__).resolve().parent.parent
+        asset = skill_root / "assets" / "greeting.txt"
         template = asset.read_text(encoding="utf-8").strip()
     else:
         template = "Hello, {name}!"
