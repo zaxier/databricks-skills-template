@@ -1,6 +1,6 @@
 # public-skills
 
-A collection of [Claude Code](https://docs.claude.com/en/docs/claude-code) skills. Each skill lives in its own top-level folder and can be cloned into a local skills directory.
+A collection of agent skills. Each skill lives in its own top-level folder and can be cloned into a local skills directory used by your AI coding agent.
 
 ## Layout
 
@@ -16,23 +16,22 @@ public-skills/
 
 ## Installing a skill
 
-Skills are discovered from `~/.claude/skills/` (user-level) or `.claude/skills/` (project-level).
+Skills are discovered from whatever directory your agent loads them from (commonly a user-level `~/.../skills/` or a project-level `.../skills/`). Drop a skill folder into that directory and the agent should pick it up.
 
-Clone an individual skill into your skills directory:
+Clone a single skill via sparse checkout:
 
 ```bash
-# User-level
 git clone --depth 1 --filter=blob:none --sparse \
   https://github.com/zaxier/public-skills.git /tmp/public-skills
 cd /tmp/public-skills && git sparse-checkout set hello-world
-cp -r hello-world ~/.claude/skills/
+cp -r hello-world <your-skills-dir>/
 ```
 
 Or clone the whole repo and symlink the skills you want:
 
 ```bash
 git clone https://github.com/zaxier/public-skills.git ~/code/public-skills
-ln -s ~/code/public-skills/hello-world ~/.claude/skills/hello-world
+ln -s ~/code/public-skills/hello-world <your-skills-dir>/hello-world
 ```
 
 ## Adding a new skill

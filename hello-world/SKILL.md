@@ -1,6 +1,6 @@
 ---
 name: hello-world
-description: Placeholder skill that prints a greeting. Use as a template when creating new skills in this repo. Triggers on phrases like "run hello-world", "test skill scaffold".
+description: Placeholder skill that prints a greeting. Use as a template when creating new skills in this repo. Triggers on phrases like "run hello-world" or "test skill scaffold".
 ---
 
 # hello-world
