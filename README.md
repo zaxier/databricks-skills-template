@@ -7,7 +7,11 @@ A collection of agent skills. The `skills/` directory mirrors the shape of the d
 ```
 public-skills/
 ├── README.md
-├── scripts/                  # (future) sync tooling — sync-to-claude, sync-to-databricks
+├── scripts/
+│   ├── README.md             # Sync tool usage
+│   └── sync_skills.py        # Push/pull skills to/from a Databricks workspace
+├── config/
+│   └── workspaces.example.toml   # Copy to workspaces.toml (gitignored)
 └── skills/
     └── <skill-name>/
         ├── SKILL.md          # Frontmatter + instructions
@@ -16,19 +20,35 @@ public-skills/
         └── assets/           # Static files (templates, sample data, images)
 ```
 
-## Syncing skills to a destination
+## Syncing skills to a Databricks workspace
 
-Because `skills/` mirrors the destination, syncing all skills is one command. The destination is whatever directory your agent reads skills from — for example a local Claude Code skills dir, or a `skills/` folder inside a Databricks workspace.
+Reconciles each skill folder between this repo and a workspace, per skill, in either direction. Never deletes implicitly; prompts on real conflicts.
 
 ```bash
-# Sync everything (mirror — adds/updates; --delete also removes stale skills)
-rsync -av --delete public-skills/skills/ <dest>/skills/
+# One-time setup
+cp config/workspaces.example.toml config/workspaces.toml
+# edit config/workspaces.toml
 
-# Sync a single skill
-rsync -av public-skills/skills/hello-world/ <dest>/skills/hello-world/
+# Dry-run
+python3 scripts/sync_skills.py plan --workspace dev
+
+# Execute (interactive on conflict)
+python3 scripts/sync_skills.py apply --workspace dev
 ```
 
-For a Databricks workspace, replace `rsync` with `databricks workspace import-dir` (or the equivalent CLI/API call) against `/Workspace/.../skills/`.
+See [scripts/README.md](scripts/README.md) for the full state model (lockfile vs. stateless), conflict resolution, and recovery from lost/corrupt state.
+
+## Syncing skills to a local agent (e.g. Claude Code)
+
+The `skills/` directory mirrors the agent's skills directory, so a plain copy works:
+
+```bash
+# Mirror all skills
+rsync -av skills/ ~/.claude/skills/
+
+# Symlink a single skill (live updates as you edit the repo)
+ln -s "$PWD/skills/hello-world" ~/.claude/skills/hello-world
+```
 
 ## Pulling a single skill via sparse checkout
 

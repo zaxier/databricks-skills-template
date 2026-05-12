@@ -1,0 +1,15 @@
+# Copy this file to config/workspaces.toml and edit for your setup.
+# config/workspaces.toml is gitignored — each user manages their own targets.
+#
+# Each [workspaces.<name>] block defines a sync target.
+#   profile  — name from `databricks auth profiles`
+#   path     — absolute workspace path that holds the `skills/` namespace
+#              (the script syncs <path>/<skill-name>/ folders directly)
+
+[workspaces.dev]
+profile = "DEFAULT"
+path = "/Workspace/Users/you@example.com/skills"
+
+[workspaces.prod]
+profile = "prod"
+path = "/Workspace/Shared/skills"
