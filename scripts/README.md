@@ -1,6 +1,11 @@
 # scripts/
 
-Tooling for keeping the repo's `skills/` directory in sync with a Databricks workspace.
+Tooling for getting this repo's `skills/` directory into the places your agents read from:
+
+- `sync_skills.py` — push/pull skills between this repo and a Databricks workspace.
+- `link_skills.py` — symlink skills into a local agent skills directory (Claude Code, Rovo Dev, etc.).
+
+Both read targets from `skills-sync.toml` at the repo root.
 
 ## `sync_skills.py`
 
@@ -88,3 +93,63 @@ For non-interactive use:
 - Python 3.11+ (for `tomllib`)
 - Databricks CLI v0.200+ on `PATH`, authenticated profiles in `~/.databrickscfg`
 - `diff` (used only when you select `diff` at the prompt)
+
+## `link_skills.py`
+
+Symlinks each skill folder in `skills/` into a configured local directory — typically your agent's skills dir. Useful when you want edits in this repo to live-update in the agent without copying or re-syncing.
+
+### Targets
+
+Defined in `skills-sync.toml` under `[link_targets.<name>]`. Path semantics:
+
+- `~` expands to your home directory.
+- An absolute path (`/Workspace/...` or `/Users/...`) is used as-is.
+- A **relative** path resolves against the current working directory at invocation time. This is how project-scoped targets work: `path = ".claude/skills"` means "the `.claude/skills` of whichever project I'm `cd`'d into when I run the script."
+
+Pre-populated targets in `skills-sync.example.toml`:
+
+| Name | Where | Scope |
+| --- | --- | --- |
+| `claude-code-user` | `~/.claude/skills` | global (every Claude Code session) |
+| `claude-code-project` | `.claude/skills` (relative) | project (run from inside the project) |
+| `rovo-dev-user` | `~/.rovodev/skills` | global |
+
+Add more as needed. Cursor / Continue use their own rules format and are **not** compatible — symlinking SKILL.md folders into them won't work.
+
+### Usage
+
+```bash
+# What's the state of each skill at this target?
+python3 scripts/link_skills.py status --target claude-code-user
+
+# Symlink every skill into the target (dry-run first if you want)
+python3 scripts/link_skills.py link --target claude-code-user --dry-run
+python3 scripts/link_skills.py link --target claude-code-user
+
+# Just one skill
+python3 scripts/link_skills.py link --target claude-code-user --skill hello-world
+
+# Project-level: cd into the project first
+cd ~/repos/my-project
+python3 ~/repos/databricks-skills-template/scripts/link_skills.py link --target claude-code-project
+
+# Remove our symlinks (leaves anything else alone)
+python3 scripts/link_skills.py unlink --target claude-code-user
+```
+
+### Per-skill state
+
+| State | Meaning | `link` action |
+| --- | --- | --- |
+| `missing` | Nothing at the destination | create symlink |
+| `linked` | Symlink already points back to this repo | skip (idempotent) |
+| `conflict-symlink` | A symlink at the destination points elsewhere | skip unless `--force` |
+| `conflict-real` | A real file or directory at the destination | refuse — remove it manually first |
+
+`--force` will replace a foreign symlink. It will **not** delete a real directory; that's a manual operation by design.
+
+### When to use `link_skills.py` vs. plain `ln -s` or `rsync`
+
+- **`link_skills.py`** — the right default. Idempotent, conflict-aware, target-driven, and gives you a consistent CLI across machines / harnesses.
+- **`ln -s` by hand** — fine for a one-off symlink of a single skill.
+- **`rsync`** — when you want a *copy* (not a symlink), e.g. for read-only distribution.

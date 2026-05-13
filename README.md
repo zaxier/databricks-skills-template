@@ -9,6 +9,11 @@ A template for managing agent skills as a git repo, with bi-directional sync to 
 - **Workspace edits aren't lost.** A skill authored directly in the workspace is pulled into the repo on next sync, not overwritten. Real conflicts prompt you to decide.
 - **Per-user state.** The sync lockfile is gitignored, so multiple people can fork this template and each sync to their own workspace without stepping on each other.
 
+## Prerequisites
+
+- **Python 3.11+** (for `tomllib` in the standard library).
+- **[Databricks CLI](https://docs.databricks.com/aws/en/dev-tools/cli/install) v0.200+** on `PATH`, with an authenticated profile in `~/.databrickscfg`. Required for `sync_skills.py`; not needed for `link_skills.py`.
+
 ## How to use this template
 
 1. Click **Use this template** on GitHub (or fork it).
@@ -23,8 +28,9 @@ A template for managing agent skills as a git repo, with bi-directional sync to 
 .
 ├── README.md
 ├── scripts/
-│   ├── README.md             # Sync tool usage, state model, recovery semantics
-│   └── sync_skills.py        # Push/pull skills to/from a Databricks workspace
+│   ├── README.md             # Tool usage, state model, recovery semantics
+│   ├── sync_skills.py        # Push/pull skills to/from a Databricks workspace
+│   └── link_skills.py        # Symlink skills into a local agent skills dir
 ├── skills-sync.example.toml  # Copy to skills-sync.toml (gitignored)
 └── skills/
     └── <skill-name>/
@@ -52,17 +58,25 @@ python3 scripts/sync_skills.py apply --workspace dev
 
 See [scripts/README.md](scripts/README.md) for the full state model (lockfile vs. stateless), conflict resolution, and recovery from lost/corrupt state.
 
-## Syncing skills to a local agent (e.g. Claude Code)
+## Syncing skills to a local agent (Claude Code, Rovo Dev, etc.)
 
-The `skills/` directory mirrors the agent's skills directory, so a plain copy works:
+The `skills/` directory mirrors the agent's skills directory. Use `link_skills.py` to symlink each skill into a configured target — edits in this repo take effect immediately, no copy step.
 
 ```bash
-# Mirror all skills
-rsync -av skills/ ~/.claude/skills/
+# Edit skills-sync.toml — pre-populated targets cover Claude Code (user + project) and Rovo Dev
 
-# Symlink a single skill (live updates as you edit the repo)
-ln -s "$PWD/skills/hello-world" ~/.claude/skills/hello-world
+# See what would happen
+python3 scripts/link_skills.py status --target claude-code-user
+
+# Link every skill
+python3 scripts/link_skills.py link --target claude-code-user
+
+# Project-level: cd into your project, then link with a relative-path target
+cd ~/repos/my-project
+python3 ~/repos/databricks-skills-template/scripts/link_skills.py link --target claude-code-project
 ```
+
+See [scripts/README.md](scripts/README.md) for target semantics, conflict handling, and harness compatibility (Cursor / Continue use a different rules format and are not supported).
 
 ## Pulling a single skill via sparse checkout
 
