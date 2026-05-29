@@ -1,19 +1,22 @@
 # Copy this file to skills-sync.toml and edit for your setup.
 # skills-sync.toml is gitignored — each user manages their own targets.
 
-# ── Workspace sync (scripts/sync_skills.py) ────────────────────────────
+# ── Databricks Genie Code sync (scripts/sync_skills.py) ────────────────
 # Each [workspaces.<name>] block defines a Databricks workspace target.
+# Genie Code reads skills from `.assistant/skills/`:
+#   - workspace-wide:  /Workspace/.assistant/skills
+#   - user-specific:   /Users/<you@example.com>/.assistant/skills
 #   profile  — name from `databricks auth profiles`
-#   path     — absolute workspace path that holds the `skills/` namespace
-#              (the script syncs <path>/<skill-name>/ folders directly)
+#   path     — absolute workspace path that holds the skill folders
+#              (the script syncs <path>/<skill-name>/ directly)
 
 [workspaces.dev]
 profile = "DEFAULT"
-path = "/Workspace/Users/you@example.com/skills"
+path = "/Users/you@example.com/.assistant/skills"
 
 [workspaces.prod]
 profile = "prod"
-path = "/Workspace/Shared/skills"
+path = "/Workspace/.assistant/skills"
 
 # ── Local symlinks (scripts/link_skills.py) ────────────────────────────
 # Each [link_targets.<name>] block defines a directory on this machine

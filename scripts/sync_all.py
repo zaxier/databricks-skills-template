@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-"""Sync all skills and commands to local agent harnesses and a Databricks workspace.
+"""Sync all skills and commands to local agent harnesses and Databricks Genie Code.
 
 Run from the target project directory (e.g. work-desktop). Orchestrates
 link_skills.py, link_commands.py, compile_cursor.py, and sync_skills.py in sequence.
 
-  python3 ~/path/to/databricks-skills-template/scripts/sync_all.py
+  python3 ~/path/to/agent-skills-template/scripts/sync_all.py
 
 Steps run by default:
   claude          link skills   → .claude/skills/    (claude-code-project)
@@ -14,7 +14,7 @@ Steps run by default:
   cursor-commands link commands → .cursor/commands/  (cursor-project)
 
 Opt-in step (not run by default — pass --include-db or --workspace NAME):
-  db              sync          → Databricks workspace (first configured, or --workspace)
+  db              sync          → Databricks Genie Code workspace (first configured, or --workspace)
 
 Flags:
   --dry-run / -n          Preview without making changes.

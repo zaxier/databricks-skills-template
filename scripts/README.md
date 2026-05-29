@@ -114,7 +114,7 @@ harnesses: [databricks]
 
 Valid values: `databricks`, `claude-code`, `codex`, `cursor`. Use a comma-separated inline list. **Omit the field entirely** to keep the default (sync everywhere).
 
-| harnesses value | Databricks workspace | Claude Code | Codex | Cursor |
+| harnesses value | Databricks Genie Code | Claude Code | Codex | Cursor |
 | --- | :---: | :---: | :---: | :---: |
 | _(absent)_ | ✓ | ✓ | ✓ | ✓ |
 | `[databricks]` | ✓ | — | — | — |
@@ -177,7 +177,7 @@ python3 scripts/link_skills.py link --target claude-code-user --skill hello-worl
 
 # Project-level: cd into the project first
 cd ~/repos/my-project
-python3 ~/repos/databricks-skills-template/scripts/link_skills.py link --target claude-code-project
+python3 ~/repos/agent-skills-template/scripts/link_skills.py link --target claude-code-project
 
 # Remove our symlinks (leaves anything else alone)
 python3 scripts/link_skills.py unlink --target claude-code-user
@@ -250,7 +250,7 @@ python3 scripts/compile_cursor.py compile --target cursor-user --skill virt-grap
 
 # Project-level: cd into the project first
 cd ~/repos/my-project
-python3 ~/repos/databricks-skills-template/scripts/compile_cursor.py compile --target cursor-project
+python3 ~/repos/agent-skills-template/scripts/compile_cursor.py compile --target cursor-project
 
 # Remove generated .mdc files (leaves foreign files alone)
 python3 scripts/compile_cursor.py clean --target cursor-user

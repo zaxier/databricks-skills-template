@@ -16,7 +16,7 @@ harnesses: [databricks]
 
 Valid values: `databricks`, `claude-code`, `codex`, `cursor`. Omit the field to include the skill everywhere.
 
-| `harnesses` value | Databricks | Claude Code | Codex | Cursor |
+| `harnesses` value | Databricks Genie Code | Claude Code | Codex | Cursor |
 | --- | :---: | :---: | :---: | :---: |
 | _(absent)_ | ✓ | ✓ | ✓ | ✓ |
 | `[databricks]` | ✓ | — | — | — |

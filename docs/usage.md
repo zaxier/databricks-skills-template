@@ -15,7 +15,7 @@ How to distribute the skills and commands in this repo to each destination. For 
 ├── docs/                     # This guide + harness-targeting reference
 ├── scripts/
 │   ├── README.md             # Full tool reference: flags, state model, conflicts
-│   ├── sync_skills.py        # Push/pull skills to/from a Databricks workspace
+│   ├── sync_skills.py        # Push/pull skills to/from Databricks Genie Code
 │   ├── link_skills.py        # Symlink skills into Claude Code / Codex
 │   ├── compile_cursor.py     # Compile SKILL.md → Cursor .mdc rule files
 │   ├── link_commands.py      # Symlink commands into Claude Code / Cursor
@@ -40,7 +40,7 @@ python3 scripts/sync_all.py --dry-run   # preview
 python3 scripts/sync_all.py             # apply
 ```
 
-That links skills into `.claude/skills/` and `.codex/skills/`, compiles Cursor rules into `.cursor/rules/`, and links commands into `.claude/commands/` and `.cursor/commands/`. The Databricks workspace sync is **opt-in** — add `--include-db` (or `--workspace NAME`). Every flag is documented in [`scripts/README.md`](../scripts/README.md).
+That links skills into `.claude/skills/` and `.codex/skills/`, compiles Cursor rules into `.cursor/rules/`, and links commands into `.claude/commands/` and `.cursor/commands/`. The Databricks Genie Code sync is **opt-in** — add `--include-db` (or `--workspace NAME`). Every flag is documented in [`scripts/README.md`](../scripts/README.md).
 
 Prefer to run the tools individually? Read on.
 
@@ -54,7 +54,7 @@ python3 scripts/link_skills.py link   --target claude-code-user
 
 # Project-level: cd into your project, then use a relative-path target
 cd ~/repos/my-project
-python3 ~/repos/databricks-skills-template/scripts/link_skills.py link --target claude-code-project
+python3 ~/repos/agent-skills-template/scripts/link_skills.py link --target claude-code-project
 
 python3 scripts/link_skills.py unlink --target claude-code-user
 ```
@@ -86,9 +86,9 @@ python3 scripts/link_commands.py link   --target claude-code-project
 
 Pre-populated command targets cover Claude Code and Cursor (v1.6+), user and project level. Codex deprecated custom prompts in favour of skills, so it has no command target.
 
-## Skills → Databricks workspace
+## Skills → Databricks Genie Code
 
-Reconciles each skill folder between this repo and a workspace, per skill, in either direction. Never deletes implicitly; prompts on real conflicts.
+Reconciles each skill folder between this repo and a Databricks workspace's `.assistant/skills/` directory (where Genie Code reads them), per skill, in either direction. Never deletes implicitly; prompts on real conflicts.
 
 ```bash
 python3 scripts/sync_skills.py plan  --workspace dev   # dry-run
