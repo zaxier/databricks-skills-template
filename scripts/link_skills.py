@@ -1,11 +1,26 @@
 #!/usr/bin/env python3
 """Symlink `skills/` into local agent skill directories.
 
-Reads [link_targets.<name>] from skills-sync.toml. Each entry is a path:
+Reads [link_targets.<name>] from skills-sync.toml. Each entry has a path,
+an optional skills allowlist, and an optional harness override:
+
+  [link_targets.claude-code-user]
+  path = "~/.claude/skills"
+  skills = ["my-skill"]          # optional — omit to link all skills
+  harness = "claude-code"        # optional — inferred from the name otherwise
+
   - '~' is expanded to the user's home dir.
   - Relative paths resolve against the current working directory at
     invocation time. This lets project-scoped targets like
     `.claude/skills` follow you into whichever project you cd into.
+  - If `skills` is set, only those skill names are linked/unlinked for
+    that target. Skills not in the list are silently ignored.
+  - The target's harness is matched against each skill's SKILL.md
+    `harnesses` field so that, e.g., a skill marked `harnesses: [codex]`
+    links into Codex targets but not Claude Code ones. The harness is
+    taken from the `harness` key when present, otherwise inferred from
+    the target name (`codex-user` → `codex`); when neither yields a
+    value, no harness filtering is applied.
 
 Subcommands:
   status   show whether each skill is linked, missing, or in conflict.
@@ -37,7 +52,30 @@ CONFIG_FILE = REPO_ROOT / "skills-sync.toml"
 @dataclass
 class LinkTarget:
     name: str
-    path: Path  # resolved absolute path
+    path: Path              # resolved absolute path
+    allowlist: list[str] | None  # None = all skills; list = only these names
+    harness: str | None     # harness this target represents; None = no filtering
+
+
+# Harnesses link_skills.py can target (it drives both Claude Code and Codex).
+# Used to map a target to the SKILL.md `harnesses` value it should match.
+LINK_HARNESSES = ("claude-code", "codex")
+
+
+def _infer_harness(name: str, explicit: str | None) -> str | None:
+    """Resolve which harness a link target represents.
+
+    Used to filter skills by their SKILL.md `harnesses` field. An explicit
+    `harness = "..."` key in the target config wins; otherwise it is inferred
+    from the target name (e.g. `codex-user` → `codex`). Returns None when it
+    can't be determined, in which case no harness filtering is applied.
+    """
+    if explicit:
+        return explicit
+    for h in LINK_HARNESSES:
+        if name == h or name.startswith(f"{h}-"):
+            return h
+    return None
 
 
 def load_target(name: str) -> LinkTarget:
@@ -57,7 +95,11 @@ def load_target(name: str) -> LinkTarget:
     expanded = Path(os.path.expanduser(raw))
     if not expanded.is_absolute():
         expanded = Path.cwd() / expanded
-    return LinkTarget(name=name, path=expanded.resolve())
+    allowlist = entry.get("skills")  # list[str] or None
+    harness = _infer_harness(name, entry.get("harness"))
+    return LinkTarget(
+        name=name, path=expanded.resolve(), allowlist=allowlist, harness=harness
+    )
 
 
 def list_skills() -> list[Path]:
@@ -66,6 +108,32 @@ def list_skills() -> list[Path]:
     return sorted(
         p for p in SKILLS_DIR.iterdir() if p.is_dir() and not p.name.startswith(".")
     )
+
+
+def _skill_harnesses(skill: Path) -> set[str] | None:
+    """Return the harnesses set from SKILL.md frontmatter, or None (= all harnesses).
+
+    SKILL.md frontmatter format:
+      harnesses: [databricks, claude-code, codex, cursor]
+
+    When the field is absent, the skill is included everywhere (default behaviour).
+    """
+    skill_md = skill / "SKILL.md"
+    if not skill_md.exists():
+        return None
+    text = skill_md.read_text("utf-8")
+    if not text.startswith("---"):
+        return None
+    try:
+        end = text.index("---", 3)
+    except ValueError:
+        return None
+    for line in text[3:end].splitlines():
+        k, sep, v = line.partition(":")
+        if sep and k.strip() == "harnesses":
+            raw = v.strip().strip("[]")
+            return {h.strip() for h in raw.split(",") if h.strip()}
+    return None
 
 
 def classify(skill: Path, dest: Path) -> str:
@@ -83,8 +151,18 @@ def classify(skill: Path, dest: Path) -> str:
     return "conflict-real"
 
 
-def _filter_skills(skill_filter: str | None) -> list[Path]:
+def _filter_skills(
+    skill_filter: str | None,
+    allowlist: list[str] | None,
+    harness: str | None,
+) -> list[Path]:
     skills = list_skills()
+    if allowlist is not None:
+        skills = [s for s in skills if s.name in allowlist]
+    # Respect SKILL.md harnesses field — omit skills that don't target this
+    # target's harness. Skills with no harnesses field are included everywhere.
+    if harness is not None:
+        skills = [s for s in skills if (h := _skill_harnesses(s)) is None or harness in h]
     if skill_filter:
         skills = [s for s in skills if s.name == skill_filter]
         if not skills:
@@ -93,7 +171,7 @@ def _filter_skills(skill_filter: str | None) -> list[Path]:
 
 
 def cmd_status(target: LinkTarget, skill_filter: str | None) -> int:
-    skills = _filter_skills(skill_filter)
+    skills = _filter_skills(skill_filter, target.allowlist, target.harness)
     print(f"Target: {target.name} → {target.path}")
     if not target.path.exists():
         print(f"  (target directory does not exist yet)")
@@ -105,7 +183,7 @@ def cmd_status(target: LinkTarget, skill_filter: str | None) -> int:
 
 
 def cmd_link(target: LinkTarget, skill_filter: str | None, force: bool, dry_run: bool) -> int:
-    skills = _filter_skills(skill_filter)
+    skills = _filter_skills(skill_filter, target.allowlist, target.harness)
     if not target.path.exists():
         print(f"{'Would create' if dry_run else 'Creating'} target dir: {target.path}")
         if not dry_run:
@@ -150,7 +228,7 @@ def cmd_link(target: LinkTarget, skill_filter: str | None, force: bool, dry_run:
 
 
 def cmd_unlink(target: LinkTarget, skill_filter: str | None, dry_run: bool) -> int:
-    skills = _filter_skills(skill_filter)
+    skills = _filter_skills(skill_filter, target.allowlist, target.harness)
     print(f"Target: {target.name} → {target.path}")
     for skill in skills:
         dest = target.path / skill.name

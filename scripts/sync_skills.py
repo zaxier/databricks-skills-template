@@ -14,6 +14,7 @@ Per-skill states:
   diverged        → CONFLICT (both changed vs. last sync — prompt)
   unknown         → SOFT CONFLICT (no state entry; hashes differ — prompt)
   unknown-match   → SKIP + baseline (no state entry but hashes match; adopt)
+  no-pull         → SKIP   (remote SKILL.md has no_pull: true — stays in workspace)
 
 State (.skills-sync-state.json) is per-user, per-machine, gitignored. Use
 --stateless to ignore it entirely (any mismatch becomes a conflict).
@@ -69,6 +70,35 @@ def _walk_files(root: Path) -> Iterable[Path]:
             continue
         if p.is_file():
             yield p
+
+
+# --- harness filtering -----------------------------------------------------
+
+
+def _skill_harnesses(skill: Path) -> set[str] | None:
+    """Return the harnesses set from SKILL.md frontmatter, or None (= all harnesses).
+
+    SKILL.md frontmatter format:
+      harnesses: [databricks, claude-code, codex, cursor]
+
+    When the field is absent, the skill is included everywhere (default behaviour).
+    """
+    skill_md = skill / "SKILL.md"
+    if not skill_md.exists():
+        return None
+    text = skill_md.read_text("utf-8")
+    if not text.startswith("---"):
+        return None
+    try:
+        end = text.index("---", 3)
+    except ValueError:
+        return None
+    for line in text[3:end].splitlines():
+        k, sep, v = line.partition(":")
+        if sep and k.strip() == "harnesses":
+            raw = v.strip().strip("[]")
+            return {h.strip() for h in raw.split(",") if h.strip()}
+    return None
 
 
 # --- config & state --------------------------------------------------------
@@ -145,6 +175,34 @@ def db_run(args: list[str], profile: str, check: bool = True) -> subprocess.Comp
         text=True,
         check=check,
     )
+
+
+def _remote_no_pull(target: WorkspaceTarget, skill: str) -> bool:
+    """Return True if the remote skill's SKILL.md declares no_pull: true.
+
+    Fetches only the SKILL.md file (not the full skill directory) and checks
+    its frontmatter. Used during plan building to avoid pulling workspace-origin
+    skills that should stay remote.
+    """
+    r = db_run(
+        ["workspace", "export", f"{target.path}/{skill}/SKILL.md"],
+        target.profile,
+        check=False,
+    )
+    if r.returncode != 0:
+        return False
+    text = r.stdout
+    if not text.startswith("---"):
+        return False
+    try:
+        end = text.index("---", 3)
+    except ValueError:
+        return False
+    for line in text[3:end].splitlines():
+        k, sep, v = line.partition(":")
+        if sep and k.strip() == "no_pull":
+            return v.strip().lower() in ("true", "yes", "1")
+    return False
 
 
 def remote_list_skills(target: WorkspaceTarget) -> list[str]:
@@ -232,7 +290,9 @@ class SkillPlan:
 
 def build_plan(target: WorkspaceTarget, state: dict, stateless: bool) -> list[SkillPlan]:
     local_names = sorted(
-        p.name for p in SKILLS_DIR.iterdir() if p.is_dir() and (p / "SKILL.md").exists()
+        p.name for p in SKILLS_DIR.iterdir()
+        if p.is_dir() and (p / "SKILL.md").exists()
+        and ((h := _skill_harnesses(p)) is None or "databricks" in h)
     )
     remote_names = sorted(remote_list_skills(target))
     all_names = sorted(set(local_names) | set(remote_names))
@@ -248,7 +308,10 @@ def build_plan(target: WorkspaceTarget, state: dict, stateless: bool) -> list[Sk
             plans.append(SkillPlan(name, "local-only", "PUSH", lh, rh))
             continue
         if in_remote and not in_local:
-            plans.append(SkillPlan(name, "remote-only", "PULL", lh, rh))
+            if _remote_no_pull(target, name):
+                plans.append(SkillPlan(name, "no-pull", "SKIP", lh, rh))
+            else:
+                plans.append(SkillPlan(name, "remote-only", "PULL", lh, rh))
             continue
         if lh == rh:
             plans.append(SkillPlan(name, "identical", "SKIP", lh, rh))
@@ -267,7 +330,10 @@ def build_plan(target: WorkspaceTarget, state: dict, stateless: bool) -> list[Sk
             plans.append(SkillPlan(name, "local-ahead", "PUSH", lh, rh))
         elif baseline == lh:
             # Local unchanged; remote moved.
-            plans.append(SkillPlan(name, "remote-ahead", "PULL", lh, rh))
+            if _remote_no_pull(target, name):
+                plans.append(SkillPlan(name, "no-pull", "SKIP", lh, rh))
+            else:
+                plans.append(SkillPlan(name, "remote-ahead", "PULL", lh, rh))
         else:
             # Both moved vs. baseline.
             plans.append(SkillPlan(name, "diverged", "CONFLICT", lh, rh))

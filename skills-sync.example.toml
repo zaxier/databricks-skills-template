@@ -21,18 +21,84 @@ path = "/Workspace/Shared/skills"
 # against the current working directory at invocation time (so
 # project-scoped targets follow you into whichever project you cd into).
 #
+# Optional `skills` allowlist: if set, only those skill names are
+# linked/unlinked for this target. Omit to link all skills.
+#
+# Optional `harness` key: which harness this target represents, matched
+# against each skill's SKILL.md `harnesses` field (so a [codex]-only skill
+# links into Codex targets but not Claude Code ones). Inferred from the
+# target name when omitted (e.g. codex-user -> codex); set it explicitly
+# only for targets whose name doesn't start with a known harness.
+#
 # Pre-populated targets cover Anthropic-compatible SKILL.md harnesses.
-# Cursor / Continue use a different rules format and are not supported.
+# Cursor uses a different format — see [cursor_targets] below.
+# Continue is not currently supported.
 
 [link_targets.claude-code-user]
 # Claude Code, user-level — available in every project.
+# Tip: only include skills that are truly project-agnostic here.
+# Claude Code ignores ~/.claude/skills/ when a project .claude/skills/
+# dir exists, so project-specific skills belong in claude-code-project.
 path = "~/.claude/skills"
+# skills = ["my-universal-skill"]  # uncomment to restrict
 
 [link_targets.claude-code-project]
 # Claude Code, project-level — relative path resolves to the directory
 # you run the script from. Run from inside the target project.
 path = ".claude/skills"
+# skills = ["my-project-skill"]    # uncomment to restrict
+
+[link_targets.codex-user]
+# Codex user-level — same SKILL.md format as Claude Code.
+path = "~/.codex/skills"
+# skills = ["my-universal-skill"]  # uncomment to restrict
+
+[link_targets.codex-project]
+# Codex project-level — relative path resolves against CWD at invocation.
+path = ".codex/skills"
+# skills = ["my-project-skill"]    # uncomment to restrict
 
 [link_targets.rovo-dev-user]
 # Rovo Dev (Atlassian) — confirm path against your install.
 path = "~/.rovodev/skills"
+
+# ── Cursor compile (scripts/compile_cursor.py) ────────────────────────────
+# Cursor reads a flat directory of .mdc files, not SKILL.md subdirectories.
+# Use compile_cursor.py to generate .mdc files from SKILL.md source.
+# For cursor-project: cd into the target project first.
+
+[cursor_targets.cursor-user]
+# Cursor user-level — available in every project.
+path = "~/.cursor/rules"
+# skills = ["my-universal-skill"]  # uncomment to restrict
+
+[cursor_targets.cursor-project]
+# Cursor project-level — relative path resolves against CWD at invocation.
+path = ".cursor/rules"
+# skills = ["my-project-skill"]    # uncomment to restrict
+
+# ── Commands (scripts/link_commands.py) ────────────────────────────────────
+# Commands are individual .md files invokable as slash commands.
+# Claude Code: .claude/commands/   Cursor (v1.6+): .cursor/commands/
+# Codex deprecated custom prompts (~/.codex/prompts/) in favour of skills.
+#
+# Each [command_targets.<name>] entry has a path and an optional commands
+# allowlist (by stem, without .md). Relative paths resolve against CWD.
+
+[command_targets.claude-code-user]
+# Claude Code user-level — available in every project.
+path = "~/.claude/commands"
+# commands = ["sync-ucos"]   # uncomment to restrict
+
+[command_targets.claude-code-project]
+# Claude Code project-level — run from inside the target project.
+path = ".claude/commands"
+# commands = ["sync-ucos"]   # uncomment to restrict
+
+[command_targets.cursor-user]
+# Cursor user-level (v1.6+) — available in every project.
+path = "~/.cursor/commands"
+
+[command_targets.cursor-project]
+# Cursor project-level (v1.6+) — relative path resolves against CWD.
+path = ".cursor/commands"

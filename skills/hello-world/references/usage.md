@@ -10,12 +10,12 @@ python3 scripts/hello.py
 # → Hello, world!
 
 # Custom name
-python3 scripts/hello.py --name "Xavier"
-# → Hello, Xavier!
+python3 scripts/hello.py --name "Ada"
+# → Hello, Ada!
 
 # Load template from the asset file
-python3 scripts/hello.py --from-asset --name "Xavier"
-# → G'day, Xavier!
+python3 scripts/hello.py --from-asset --name "Ada"
+# → G'day, Ada!
 ```
 
 ## Anatomy of a skill in this repo

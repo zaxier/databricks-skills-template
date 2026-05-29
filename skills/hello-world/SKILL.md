@@ -17,8 +17,8 @@ Run the script directly:
 
 ```bash
 python3 scripts/hello.py
-python3 scripts/hello.py --name "Xavier"
-python3 scripts/hello.py --from-asset --name "Xavier"
+python3 scripts/hello.py --name "Ada"
+python3 scripts/hello.py --from-asset --name "Ada"
 ```
 
 ## Files

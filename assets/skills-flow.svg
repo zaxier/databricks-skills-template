@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 420" width="960" height="420" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" role="img" aria-label="One git repo of skills and commands fans out through tooling to Claude Code, Codex, Cursor, and a Databricks workspace.">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" fill="#5A6B70"/>
+    </marker>
+  </defs>
+
+  <!-- card background -->
+  <rect x="8" y="8" width="944" height="404" rx="16" fill="#FBFAF8" stroke="#E6E1D8"/>
+
+  <!-- Source: the git repo -->
+  <rect x="48" y="138" width="232" height="146" rx="12" fill="#EAF1F4" stroke="#2C5566" stroke-width="1.5"/>
+  <text x="66" y="166" font-size="12" font-weight="700" letter-spacing="1.5" fill="#2C5566">GIT REPO</text>
+  <rect x="66" y="178" width="196" height="40" rx="8" fill="#ffffff" stroke="#B8C9D0"/>
+  <text x="164" y="203" text-anchor="middle" font-size="15" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" fill="#0B2026">skills/</text>
+  <rect x="66" y="228" width="196" height="40" rx="8" fill="#ffffff" stroke="#B8C9D0"/>
+  <text x="164" y="253" text-anchor="middle" font-size="15" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" fill="#0B2026">commands/</text>
+  <text x="164" y="308" text-anchor="middle" font-size="12.5" font-style="italic" fill="#5A6B70">single source of truth</text>
+
+  <!-- Hub: the tooling -->
+  <rect x="398" y="150" width="164" height="122" rx="12" fill="#0B2026"/>
+  <text x="480" y="178" text-anchor="middle" font-size="13" font-weight="700" letter-spacing="1.5" fill="#ffffff">TOOLING</text>
+  <text x="480" y="201" text-anchor="middle" font-size="11" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" fill="#C9D2D5">link_skills</text>
+  <text x="480" y="218" text-anchor="middle" font-size="11" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" fill="#C9D2D5">compile_cursor</text>
+  <text x="480" y="235" text-anchor="middle" font-size="11" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" fill="#C9D2D5">link_commands</text>
+  <text x="480" y="252" text-anchor="middle" font-size="11" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" fill="#C9D2D5">sync_skills</text>
+  <text x="480" y="304" text-anchor="middle" font-size="11.5" font-style="italic" fill="#5A6B70">sync_all runs them together</text>
+
+  <!-- Destinations -->
+  <!-- Claude Code -->
+  <rect x="640" y="70" width="272" height="64" rx="10" fill="#ffffff" stroke="#CBD3D6"/>
+  <rect x="640" y="70" width="7" height="64" rx="3.5" fill="#D97757"/>
+  <text x="668" y="98" font-size="15" font-weight="700" fill="#0B2026">Claude Code</text>
+  <text x="668" y="118" font-size="11" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" fill="#5A6B70">.claude/skills + .claude/commands</text>
+  <!-- Codex -->
+  <rect x="640" y="156" width="272" height="64" rx="10" fill="#ffffff" stroke="#CBD3D6"/>
+  <rect x="640" y="156" width="7" height="64" rx="3.5" fill="#10A37F"/>
+  <text x="668" y="184" font-size="15" font-weight="700" fill="#0B2026">Codex</text>
+  <text x="668" y="204" font-size="11" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" fill="#5A6B70">.codex/skills</text>
+  <!-- Cursor -->
+  <rect x="640" y="242" width="272" height="64" rx="10" fill="#ffffff" stroke="#CBD3D6"/>
+  <rect x="640" y="242" width="7" height="64" rx="3.5" fill="#6E56CF"/>
+  <text x="668" y="270" font-size="15" font-weight="700" fill="#0B2026">Cursor</text>
+  <text x="668" y="290" font-size="11" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" fill="#5A6B70">.cursor/rules + .cursor/commands</text>
+  <!-- Databricks -->
+  <rect x="640" y="328" width="272" height="64" rx="10" fill="#ffffff" stroke="#CBD3D6"/>
+  <rect x="640" y="328" width="7" height="64" rx="3.5" fill="#FF3621"/>
+  <text x="668" y="356" font-size="15" font-weight="700" fill="#0B2026">Databricks workspace</text>
+  <text x="668" y="376" font-size="11" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" fill="#5A6B70">/Workspace/.../skills  (two-way)</text>
+
+  <!-- Arrows: source to hub -->
+  <line x1="282" y1="211" x2="394" y2="211" stroke="#5A6B70" stroke-width="2" marker-end="url(#arrow)"/>
+  <!-- Arrows: hub to destinations -->
+  <path d="M562 188 C 600 160, 610 120, 636 102" fill="none" stroke="#5A6B70" stroke-width="1.8" marker-end="url(#arrow)"/>
+  <path d="M562 200 C 600 196, 610 190, 636 188" fill="none" stroke="#5A6B70" stroke-width="1.8" marker-end="url(#arrow)"/>
+  <path d="M562 224 C 600 248, 610 262, 636 274" fill="none" stroke="#5A6B70" stroke-width="1.8" marker-end="url(#arrow)"/>
+  <path d="M562 240 C 604 300, 606 332, 636 358" fill="none" stroke="#5A6B70" stroke-width="1.8" marker-end="url(#arrow)"/>
+</svg>
