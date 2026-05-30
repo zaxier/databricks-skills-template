@@ -57,9 +57,10 @@ class LinkTarget:
     harness: str | None     # harness this target represents; None = no filtering
 
 
-# Harnesses link_skills.py can target (it drives both Claude Code and Codex).
-# Used to map a target to the SKILL.md `harnesses` value it should match.
-LINK_HARNESSES = ("claude-code", "codex")
+# Harnesses link_skills.py can target. All of these read SKILL.md folders
+# natively, so they're driven by the same symlink mechanism. Used to map a
+# target to the SKILL.md `harnesses` value it should match.
+LINK_HARNESSES = ("claude-code", "codex", "cursor")
 
 
 def _infer_harness(name: str, explicit: str | None) -> str | None:

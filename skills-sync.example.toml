@@ -33,9 +33,8 @@ path = "/Workspace/.assistant/skills"
 # target name when omitted (e.g. codex-user -> codex); set it explicitly
 # only for targets whose name doesn't start with a known harness.
 #
-# Pre-populated targets cover Anthropic-compatible SKILL.md harnesses.
-# Cursor uses a different format — see [cursor_targets] below.
-# Continue is not currently supported.
+# Pre-populated targets cover every harness that reads SKILL.md folders
+# natively: Claude Code, Codex, and Cursor. Continue is not currently supported.
 
 [link_targets.claude-code-user]
 # Claude Code, user-level — available in every project.
@@ -61,24 +60,20 @@ path = "~/.codex/skills"
 path = ".codex/skills"
 # skills = ["my-project-skill"]    # uncomment to restrict
 
+[link_targets.cursor-user]
+# Cursor user-level — Cursor reads SKILL.md folders natively from
+# ~/.cursor/skills, so it's symlinked exactly like Claude Code and Codex.
+path = "~/.cursor/skills"
+# skills = ["my-universal-skill"]  # uncomment to restrict
+
+[link_targets.cursor-project]
+# Cursor project-level — relative path resolves against CWD at invocation.
+path = ".cursor/skills"
+# skills = ["my-project-skill"]    # uncomment to restrict
+
 [link_targets.rovo-dev-user]
 # Rovo Dev (Atlassian) — confirm path against your install.
 path = "~/.rovodev/skills"
-
-# ── Cursor compile (scripts/compile_cursor.py) ────────────────────────────
-# Cursor reads a flat directory of .mdc files, not SKILL.md subdirectories.
-# Use compile_cursor.py to generate .mdc files from SKILL.md source.
-# For cursor-project: cd into the target project first.
-
-[cursor_targets.cursor-user]
-# Cursor user-level — available in every project.
-path = "~/.cursor/rules"
-# skills = ["my-universal-skill"]  # uncomment to restrict
-
-[cursor_targets.cursor-project]
-# Cursor project-level — relative path resolves against CWD at invocation.
-path = ".cursor/rules"
-# skills = ["my-project-skill"]    # uncomment to restrict
 
 # ── Commands (scripts/link_commands.py) ────────────────────────────────────
 # Commands are individual .md files invokable as slash commands.

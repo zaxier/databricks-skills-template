@@ -3,8 +3,7 @@
 Tooling for getting this repo's `skills/` and `commands/` into the places your agents read from:
 
 - `sync_skills.py` — push/pull skills between this repo and a Databricks workspace.
-- `link_skills.py` — symlink skills into a local agent skills directory (Claude Code, Codex).
-- `compile_cursor.py` — compile `SKILL.md` files into Cursor `.mdc` rule files.
+- `link_skills.py` — symlink skills into a local agent skills directory (Claude Code, Codex, Cursor).
 - `link_commands.py` — symlink `commands/*.md` into a local agent commands directory (Claude Code, Cursor).
 - `sync_all.py` — run every local step (and optionally the workspace sync) in one go.
 
@@ -102,7 +101,7 @@ For non-interactive use:
 
 ## Harness targeting — restricting which targets a skill syncs to
 
-By default every skill is included at every target (workspace sync, claude-code link, codex link, cursor compile). Add a `harnesses` field to a skill's `SKILL.md` frontmatter to restrict this:
+By default every skill is included at every target (workspace sync, claude-code link, codex link, cursor link). Add a `harnesses` field to a skill's `SKILL.md` frontmatter to restrict this:
 
 ```yaml
 ---
@@ -121,7 +120,7 @@ Valid values: `databricks`, `claude-code`, `codex`, `cursor`. Use a comma-separa
 | `[claude-code, codex, cursor]` | — | ✓ | ✓ | ✓ |
 | `[claude-code]` | — | ✓ | — | — |
 
-Skills excluded from a target are silently omitted — they won't appear in `status` output for that target, and won't be linked, compiled, or synced there. The per-target `skills` allowlist in `skills-sync.toml` applies on top of this (a skill must pass both filters to be included).
+Skills excluded from a target are silently omitted — they won't appear in `status` output for that target, and won't be linked or synced there. The per-target `skills` allowlist in `skills-sync.toml` applies on top of this (a skill must pass both filters to be included).
 
 ### Keeping a skill workspace-only (`no_pull: true`)
 
@@ -157,8 +156,10 @@ Configured targets in `skills-sync.toml`:
 | `claude-code-project` | `.claude/skills` (relative) | project (run from inside the project) |
 | `codex-user` | `~/.codex/skills` | global (every Codex session) |
 | `codex-project` | `.codex/skills` (relative) | project (run from inside the project) |
+| `cursor-user` | `~/.cursor/skills` | global (every Cursor project) |
+| `cursor-project` | `.cursor/skills` (relative) | project (run from inside the project) |
 
-Add more as needed. Cursor uses a different rules format (`.mdc` files in a flat directory) — use `compile_cursor.py` instead of symlinking. Continue is not currently supported.
+Add more as needed. Cursor reads `SKILL.md` folders natively from `.cursor/skills/`, so it's symlinked like the others — no compile step. Continue is not currently supported.
 
 > **Claude Code caveat:** Claude Code ignores `~/.claude/skills/` entirely when a project has its own `.claude/skills/` directory. Linking the same skill at both levels also causes both to appear in the skill picker (known bug). Use the allowlist (see below) to keep user-level and project-level sets distinct.
 
@@ -216,76 +217,20 @@ The `--skill` CLI flag applies on top of the allowlist as a further one-off filt
 - **`ln -s` by hand** — fine for a one-off symlink of a single skill.
 - **`rsync`** — when you want a *copy* (not a symlink), e.g. for read-only distribution.
 
-## `compile_cursor.py`
+## Cursor (native `SKILL.md`)
 
-Cursor reads `.mdc` files from a flat directory (`~/.cursor/rules/` or `.cursor/rules/`). SKILL.md subdirectories can't be symlinked in — they have to be compiled. This script reads each `SKILL.md`, extracts the frontmatter, and writes a `<skill-name>.mdc` with Cursor-compatible frontmatter.
-
-### Targets
-
-Defined in `skills-sync.toml` under `[cursor_targets.<name>]`. Same path semantics as `link_skills.py` — `~` expands, relative paths resolve against CWD.
-
-Configured targets in `skills-sync.toml`:
-
-| Name | Where | Scope |
-| --- | --- | --- |
-| `cursor-user` | `~/.cursor/rules` | global (every Cursor project) |
-| `cursor-project` | `.cursor/rules` (relative) | project (run from inside the project) |
-
-The `skills` allowlist works the same way as for `link_skills.py`.
-
-### Usage
+Older Cursor only read `.mdc` rule files from a flat directory, so skills had to be compiled. Modern Cursor discovers `SKILL.md` folders natively in `.cursor/skills/` (project) and `~/.cursor/skills/` (user) — the same layout as Claude Code and Codex. There is no separate compile step (the old `compile_cursor.py` has been removed); use `link_skills.py` with the `cursor-user` / `cursor-project` targets:
 
 ```bash
-# Check state of each skill at a target
-python3 scripts/compile_cursor.py status --target cursor-user
-
-# Compile (idempotent)
-python3 scripts/compile_cursor.py compile --target cursor-user
-
-# Dry-run
-python3 scripts/compile_cursor.py compile --target cursor-user --dry-run
-
-# Just one skill
-python3 scripts/compile_cursor.py compile --target cursor-user --skill virt-graph
+python3 scripts/link_skills.py status --target cursor-user
+python3 scripts/link_skills.py link   --target cursor-user
 
 # Project-level: cd into the project first
 cd ~/repos/my-project
-python3 ~/repos/agent-skills-template/scripts/compile_cursor.py compile --target cursor-project
-
-# Remove generated .mdc files (leaves foreign files alone)
-python3 scripts/compile_cursor.py clean --target cursor-user
+python3 ~/repos/agent-skills-template/scripts/link_skills.py link --target cursor-project
 ```
 
-### Output format
-
-Each `SKILL.md` compiles to:
-
-```
----
-description: "<SKILL.md description field>"
-alwaysApply: false
-# skills-repo:generated
----
-
-<SKILL.md body verbatim>
-```
-
-`alwaysApply: false` makes the rule agent-requested — Cursor's AI decides when to inject it based on the description. Generated files are marked with `# skills-repo:generated` so `status` and `clean` can identify them.
-
-### Per-skill states
-
-| State | Meaning | `compile` action |
-| --- | --- | --- |
-| `missing` | No `.mdc` at the destination | write it |
-| `current` | `.mdc` matches expected output | skip (idempotent) |
-| `stale` | `.mdc` was generated by us but content differs | overwrite |
-| `foreign` | A `.mdc` exists but was not generated by this script | skip — report conflict |
-
-**Re-compile after edits.** Unlike symlinks, compiled files don't update automatically. After editing a `SKILL.md`, run `compile` again. Use `status` to find stale files.
-
-### Requirements
-
-- Python 3.11+ (for `tomllib`)
+Symlinks live-update, so edits in this repo are picked up without a re-sync. Cursor additionally reads `.claude/skills/` and `.codex/skills/` for cross-tool compatibility, and `.cursor/rules/*.mdc` rules still coexist for always-on guidance (skills are loaded on demand).
 
 ---
 
@@ -353,7 +298,7 @@ Steps run by default (all project-scoped):
 | claude | `link_skills.py` | `.claude/skills/` |
 | claude-commands | `link_commands.py` | `.claude/commands/` |
 | codex | `link_skills.py` | `.codex/skills/` |
-| cursor | `compile_cursor.py` | `.cursor/rules/` |
+| cursor | `link_skills.py` | `.cursor/skills/` |
 | cursor-commands | `link_commands.py` | `.cursor/commands/` |
 
 The Databricks workspace sync is **opt-in** — it only runs when you pass `--include-db` (or `--workspace NAME`, which implies it). Without a name, the first workspace in `skills-sync.toml` is used.

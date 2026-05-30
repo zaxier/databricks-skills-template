@@ -24,11 +24,11 @@ Valid values: `databricks`, `claude-code`, `codex`, `cursor`. Omit the field to 
 | `[claude-code]` | — | ✓ | — | — |
 | `[codex]` | — | — | ✓ | — |
 
-Each tool matches a skill's `harnesses` against the harness the target represents (`link_skills.py` derives it from the target name, e.g. `codex-user` → `codex`, or from an explicit `harness` key). Skills excluded from a target are silently omitted — they won't appear in that target's `status` output, and won't be linked, compiled, or synced there.
+Each tool matches a skill's `harnesses` against the harness the target represents (`link_skills.py` derives it from the target name, e.g. `codex-user` → `codex`, or from an explicit `harness` key). Skills excluded from a target are silently omitted — they won't appear in that target's `status` output, and won't be linked or synced there.
 
 ## `skills` allowlist — per target
 
-Each `[link_targets.<name>]` / `[cursor_targets.<name>]` block in `skills-sync.toml` accepts an optional `skills` list. When set, only those skills are operated on for that target. It applies **on top of** `harnesses` — a skill must pass both filters to be included. (`[command_targets.<name>]` blocks have an equivalent `commands` allowlist.)
+Each `[link_targets.<name>]` block in `skills-sync.toml` accepts an optional `skills` list. When set, only those skills are operated on for that target. It applies **on top of** `harnesses` — a skill must pass both filters to be included. (`[command_targets.<name>]` blocks have an equivalent `commands` allowlist.)
 
 ```toml
 [link_targets.claude-code-user]

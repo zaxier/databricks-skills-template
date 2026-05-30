@@ -5,7 +5,7 @@ How to distribute the skills and commands in this repo to each destination. For 
 ## Prerequisites
 
 - **Python 3.11+** (for `tomllib` in the standard library). Required by every script.
-- **[Databricks CLI](https://docs.databricks.com/aws/en/dev-tools/cli/install) v0.200+** on `PATH`, with an authenticated profile in `~/.databrickscfg` — only needed for `sync_skills.py` (workspace sync). The local link/compile tools don't need it.
+- **[Databricks CLI](https://docs.databricks.com/aws/en/dev-tools/cli/install) v0.200+** on `PATH`, with an authenticated profile in `~/.databrickscfg` — only needed for `sync_skills.py` (workspace sync). The local link tools don't need it.
 
 ## Layout
 
@@ -16,8 +16,7 @@ How to distribute the skills and commands in this repo to each destination. For 
 ├── scripts/
 │   ├── README.md             # Full tool reference: flags, state model, conflicts
 │   ├── sync_skills.py        # Push/pull skills to/from Databricks Genie Code
-│   ├── link_skills.py        # Symlink skills into Claude Code / Codex
-│   ├── compile_cursor.py     # Compile SKILL.md → Cursor .mdc rule files
+│   ├── link_skills.py        # Symlink skills into Claude Code / Codex / Cursor
 │   ├── link_commands.py      # Symlink commands into Claude Code / Cursor
 │   └── sync_all.py           # Run every local step (and optionally DB) at once
 ├── skills-sync.example.toml  # Copy to skills-sync.toml (gitignored)
@@ -40,11 +39,11 @@ python3 scripts/sync_all.py --dry-run   # preview
 python3 scripts/sync_all.py             # apply
 ```
 
-That links skills into `.claude/skills/` and `.codex/skills/`, compiles Cursor rules into `.cursor/rules/`, and links commands into `.claude/commands/` and `.cursor/commands/`. The Databricks Genie Code sync is **opt-in** — add `--include-db` (or `--workspace NAME`). Every flag is documented in [`scripts/README.md`](../scripts/README.md).
+That links skills into `.claude/skills/`, `.codex/skills/`, and `.cursor/skills/`, and links commands into `.claude/commands/` and `.cursor/commands/`. The Databricks Genie Code sync is **opt-in** — add `--include-db` (or `--workspace NAME`). Every flag is documented in [`scripts/README.md`](../scripts/README.md).
 
 Prefer to run the tools individually? Read on.
 
-## Skills → Claude Code / Codex
+## Skills → Claude Code / Codex / Cursor
 
 `link_skills.py` symlinks each skill folder into a configured target. Edits in this repo take effect immediately — no copy step.
 
@@ -59,21 +58,20 @@ python3 ~/repos/agent-skills-template/scripts/link_skills.py link --target claud
 python3 scripts/link_skills.py unlink --target claude-code-user
 ```
 
-Targets are defined in `skills-sync.toml`. Pre-populated ones cover Claude Code (user + project), Codex (user + project), and Rovo Dev.
+Targets are defined in `skills-sync.toml`. Pre-populated ones cover Claude Code (user + project), Codex (user + project), Cursor (user + project), and Rovo Dev.
 
 > **Claude Code caveat:** Claude Code ignores `~/.claude/skills/` when a project has its own `.claude/skills/`. Use the per-target `skills` allowlist to keep user-level and project-level sets distinct.
 
-## Skills → Cursor rules
+### Cursor reads `SKILL.md` natively
 
-Cursor reads `.mdc` files from a flat directory — it can't load `SKILL.md` subdirectories. `compile_cursor.py` compiles each `SKILL.md` into a `<skill-name>.mdc` with Cursor-compatible frontmatter (`alwaysApply: false`, so the rule is agent-requested).
+Modern Cursor discovers `SKILL.md` folders directly in `.cursor/skills/` (project) and `~/.cursor/skills/` (user) — the same format as Claude Code and Codex, so there's no compile step. Symlink the skills with the `cursor-user` / `cursor-project` targets just like any other harness:
 
 ```bash
-python3 scripts/compile_cursor.py status  --target cursor-user
-python3 scripts/compile_cursor.py compile --target cursor-user
-python3 scripts/compile_cursor.py clean   --target cursor-user   # remove generated files
+python3 scripts/link_skills.py link --target cursor-user
+python3 scripts/link_skills.py link --target cursor-project   # cd into the project first
 ```
 
-Generated files carry an internal marker so `status`/`clean` never touch hand-written Cursor rules. **Unlike symlinks, compiled files don't auto-update** — re-run `compile` after editing a `SKILL.md` (`status` shows `stale` files).
+Edits live-update through the symlink. Cursor also reads `.claude/skills/` and `.codex/skills/` for cross-tool compatibility, and `.cursor/rules/*.mdc` rules still coexist for always-on guidance (skills are loaded on demand).
 
 ## Commands → slash commands
 
@@ -102,7 +100,7 @@ See [`scripts/README.md`](../scripts/README.md) for the full state model (lockfi
 1. `mkdir -p skills/my-skill/{scripts,references,assets}`
 2. Add a `SKILL.md` with YAML frontmatter (`name`, `description`, optional `harnesses`).
 3. Add any scripts, references, or assets the skill needs.
-4. Commit, push, and re-distribute. Symlinked targets pick it up automatically; re-run `compile_cursor.py` for Cursor.
+4. Commit, push, and re-distribute. Symlinked targets (including Cursor) pick it up automatically.
 
 ## Adding a new command
 

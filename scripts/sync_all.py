@@ -2,7 +2,7 @@
 """Sync all skills and commands to local agent harnesses and Databricks Genie Code.
 
 Run from the target project directory (e.g. work-desktop). Orchestrates
-link_skills.py, link_commands.py, compile_cursor.py, and sync_skills.py in sequence.
+link_skills.py, link_commands.py, and sync_skills.py in sequence.
 
   python3 ~/path/to/agent-skills-template/scripts/sync_all.py
 
@@ -10,7 +10,7 @@ Steps run by default:
   claude          link skills   → .claude/skills/    (claude-code-project)
   claude-commands link commands → .claude/commands/  (claude-code-project)
   codex           link skills   → .codex/skills/     (codex-project)
-  cursor          compile       → .cursor/rules/     (cursor-project)
+  cursor          link skills   → .cursor/skills/    (cursor-project)
   cursor-commands link commands → .cursor/commands/  (cursor-project)
 
 Opt-in step (not run by default — pass --include-db or --workspace NAME):
@@ -23,7 +23,7 @@ Flags:
   --skip-claude           Skip the claude-code-project skills link step.
   --skip-claude-commands  Skip the claude-code-project commands link step.
   --skip-codex            Skip the codex-project link step.
-  --skip-cursor           Skip the cursor-project compile step.
+  --skip-cursor           Skip the cursor-project skills link step.
   --skip-cursor-commands  Skip the cursor-project commands link step.
   --include-db / --db     Include the Databricks workspace sync step
                           (otherwise skipped by default).
@@ -47,7 +47,6 @@ CONFIG_FILE = REPO_ROOT / "skills-sync.toml"
 
 LINK_PY = SCRIPTS_DIR / "link_skills.py"
 LINK_COMMANDS_PY = SCRIPTS_DIR / "link_commands.py"
-COMPILE_PY = SCRIPTS_DIR / "compile_cursor.py"
 SYNC_PY = SCRIPTS_DIR / "sync_skills.py"
 
 _PY = sys.executable  # same interpreter that launched this script
@@ -112,7 +111,7 @@ def main() -> int:
     parser.add_argument("--skip-codex", action="store_true",
                         help="Skip the codex-project link step.")
     parser.add_argument("--skip-cursor", action="store_true",
-                        help="Skip the cursor-project compile step.")
+                        help="Skip the cursor-project skills link step.")
     parser.add_argument("--skip-cursor-commands", action="store_true",
                         help="Skip the cursor-project commands link step.")
     parser.add_argument("--include-db", "--db", dest="include_db", action="store_true",
@@ -173,11 +172,11 @@ def main() -> int:
             if not ok:
                 failures.append("codex")
 
-    # ── Step: cursor-project rules ────────────────────────────────────────
+    # ── Step: cursor-project skills ───────────────────────────────────────
     if not args.skip_cursor:
-        _step("cursor-project  →  .cursor/rules/")
+        _step("cursor-project  →  .cursor/skills/")
         if not args.interactive or _prompt("Run this step?"):
-            ok = _run([_PY, COMPILE_PY, "compile", "--target", "cursor-project"] + dry_flag)
+            ok = _run([_PY, LINK_PY, "link", "--target", "cursor-project"] + dry_flag + force_flag)
             if not ok:
                 failures.append("cursor")
 

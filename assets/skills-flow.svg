@@ -20,10 +20,9 @@
   <!-- Hub: the tooling -->
   <rect x="398" y="150" width="164" height="122" rx="12" fill="#0B2026"/>
   <text x="480" y="178" text-anchor="middle" font-size="13" font-weight="700" letter-spacing="1.5" fill="#ffffff">TOOLING</text>
-  <text x="480" y="201" text-anchor="middle" font-size="11" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" fill="#C9D2D5">link_skills</text>
-  <text x="480" y="218" text-anchor="middle" font-size="11" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" fill="#C9D2D5">compile_cursor</text>
-  <text x="480" y="235" text-anchor="middle" font-size="11" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" fill="#C9D2D5">link_commands</text>
-  <text x="480" y="252" text-anchor="middle" font-size="11" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" fill="#C9D2D5">sync_skills</text>
+  <text x="480" y="206" text-anchor="middle" font-size="11" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" fill="#C9D2D5">link_skills</text>
+  <text x="480" y="228" text-anchor="middle" font-size="11" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" fill="#C9D2D5">link_commands</text>
+  <text x="480" y="250" text-anchor="middle" font-size="11" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" fill="#C9D2D5">sync_skills</text>
   <text x="480" y="304" text-anchor="middle" font-size="11.5" font-style="italic" fill="#5A6B70">sync_all runs them together</text>
 
   <!-- Destinations -->
@@ -41,7 +40,7 @@
   <rect x="640" y="242" width="272" height="64" rx="10" fill="#ffffff" stroke="#CBD3D6"/>
   <rect x="640" y="242" width="7" height="64" rx="3.5" fill="#6E56CF"/>
   <text x="668" y="270" font-size="15" font-weight="700" fill="#0B2026">Cursor</text>
-  <text x="668" y="290" font-size="11" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" fill="#5A6B70">.cursor/rules + .cursor/commands</text>
+  <text x="668" y="290" font-size="11" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" fill="#5A6B70">.cursor/skills + .cursor/commands</text>
   <!-- Databricks -->
   <rect x="640" y="328" width="272" height="64" rx="10" fill="#ffffff" stroke="#CBD3D6"/>
   <rect x="640" y="328" width="7" height="64" rx="3.5" fill="#FF3621"/>
